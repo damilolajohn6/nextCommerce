@@ -1,52 +1,69 @@
 "use client";
 
-import { ShoppingCart } from "lucide-react";
-
-import Currency  from "@/components/ui/currency";
-import Button from "@/components/ui/button";
 import { Product } from "@/types";
-import useCart from "@/hooks/use-cart";
+import { useState } from "react";
+import Button from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface InfoProps {
-  data: Product
-};
+  data: Product & {
+    variations: {
+      id: string;
+      size?: { id: string; name: string } | null;
+      color?: { id: string; name: string } | null;
+      price: number;
+    }[];
+  };
+}
 
 const Info: React.FC<InfoProps> = ({ data }) => {
-  const cart = useCart();
+  const [selectedVariation, setSelectedVariation] = useState(
+    data.variations[0]
+  );
 
-  const onAddToCart = () => {
-    cart.addItem(data);
-  }
-
-  return ( 
+  return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
       <div className="mt-3 flex items-end justify-between">
         <p className="text-2xl text-gray-900">
-          <Currency value={data?.price} />
+          ${selectedVariation.price.toFixed(2)}
         </p>
       </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Size:</h3>
-          <div>
-            {data?.size?.value}
-          </div>
-        </div>
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Color:</h3>
-          <div className="h-6 w-6 rounded-full border border-gray-600" style={{ backgroundColor: data?.color?.value }} />
+          <Select
+            value={selectedVariation.id}
+            onValueChange={(value) =>
+              setSelectedVariation(data.variations.find((v) => v.id === value)!)
+            }
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select size" />
+            </SelectTrigger>
+            <SelectContent>
+              {data.variations.map((variation) => (
+                <SelectItem key={variation.id} value={variation.id}>
+                  {variation.size?.name || "No Size"} /{" "}
+                  {variation.color?.name || "No Color"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="mt-10 flex items-center gap-x-3">
-        <Button onClick={onAddToCart} className="flex items-center gap-x-2">
-          Add To Cart
-          <ShoppingCart size={20} />
-        </Button>
+        <Button className="flex items-center gap-x-2">Add To Cart</Button>
       </div>
     </div>
   );
-}
- 
+};
+
 export default Info;

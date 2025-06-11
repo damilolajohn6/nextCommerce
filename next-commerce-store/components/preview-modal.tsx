@@ -24,7 +24,16 @@ const PreviewModal = () => {
           <Gallery images={product.images} />
         </div>
         <div className="sm:col-span-8 lg:col-span-7">
-          <Info data={product} />
+          <Info
+            data={{
+              ...product,
+              variations: product.variations.map((variation: any) => ({
+                ...variation,
+                size: variation.size ?? undefined,
+                color: variation.color ?? undefined,
+              })),
+            }}
+          />
         </div>
       </div>
     </Modal>
