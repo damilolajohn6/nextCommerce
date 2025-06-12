@@ -1,3 +1,4 @@
+
 import Container from "@/components/ui/container";
 import Billboard from "@/components/ui/billboard";
 import ProductCard from "@/components/ui/product-card";
@@ -11,29 +12,34 @@ import getColors from "@/actions/get-colors";
 import Filter from "./components/filter";
 import MobileFilters from "./components/mobile-filters";
 
-
 interface CategoryPageProps {
   params: {
     categoryId: string;
   };
-  searchParams: {
+  searchParams?: {
     colorId?: string;
     sizeId?: string;
   };
 }
 
-const CategoryPage: React.FC<CategoryPageProps> = async ({
-  params,
-  searchParams,
-}) => {
+const CategoryPage = async (props: CategoryPageProps) => {
+  const { params, searchParams } = props;
+
+  const categoryId = await Promise.resolve(params.categoryId);
+  const colorId = searchParams?.colorId ?? undefined;
+  const sizeId = searchParams?.sizeId ?? undefined;
+
   const products = await getProducts({
-    categoryId: params.categoryId,
-    ...(searchParams.colorId && { colorId: searchParams.colorId }),
-    ...(searchParams.sizeId && { sizeId: searchParams.sizeId }),
+    categoryId,
+    ...(colorId && { colorId }),
+    ...(sizeId && { sizeId }),
   });
-  const sizes = await getSizes();
-  const colors = await getColors();
-  const category = await getCategory(params.categoryId);
+
+  const [sizes, colors, category] = await Promise.all([
+    getSizes(),
+    getColors(),
+    getCategory(categoryId),
+  ]);
 
   return (
     <div className="bg-white">

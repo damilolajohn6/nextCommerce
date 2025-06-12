@@ -6,6 +6,7 @@ import ProductList from "@/components/product-list";
 import Container from "@/components/ui/container";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import HeroSection from "@/components/Herosection";
+import DummyProductPage from "@/components/DummyProduct";
 
 const HomePage = async () => {
   const products = await getProducts({ isFeatured: true });
@@ -36,6 +37,7 @@ const HomePage = async () => {
           <ProductList title="Featured Products" items={products} />
         </div>
       </Container>
+      <DummyProductPage />
       <WhyChooseUs />
       <InfoSection />
     </div>

@@ -193,9 +193,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full"
+          className="space-y-8 w-full max-w-4xl mx-auto"
         >
-          <div className="md:grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <FormField
               control={form.control}
               name="name"
@@ -275,7 +275,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     Remove
                   </Button>
                 </div>
-                <div className="md:grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <FormField
                     control={form.control}
                     name={`variations.${index}.sizeId`}
@@ -413,11 +413,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 })
               }
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               Add Variation
             </Button>
           </div>
-          <div className="md:grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="isFeatured"
@@ -459,7 +460,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               )}
             />
           </div>
-          <Button disabled={loading} className="ml-auto" type="submit">
+          <Button
+            disabled={loading}
+            className="ml-auto w-full sm:w-auto"
+            type="submit"
+          >
             {action}
           </Button>
         </form>

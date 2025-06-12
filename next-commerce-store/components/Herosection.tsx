@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import Navbar from "./navbar";
+// import Navbar from "./navbar";
 
 const HeroSection: React.FC = () => {
   return (
@@ -19,7 +19,7 @@ const HeroSection: React.FC = () => {
       </div>
       <div className="absolute bottom-0 right-0 w-1/2 h-full z-0">
         <Image
-          src="/hero.png" 
+          src="/hero.png"
           alt="Right decorative"
           layout="fill"
           objectFit="contain"
@@ -28,9 +28,9 @@ const HeroSection: React.FC = () => {
       </div>
 
       {/* Navbar */}
-      <div className="relative z-20 w-full">
+      {/* <div className="relative z-20 w-full">
         <Navbar />
-      </div>
+      </div> */}
 
       {/* Content */}
       <div className="relative z-20 mt-10 md:mt-20 px-6 max-w-4xl text-center">
@@ -46,12 +46,12 @@ const HeroSection: React.FC = () => {
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
           <Link href="/shop" passHref>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-md shadow-lg transition duration-300 ease-in-out text-lg w-full sm:w-auto">
+            <button className="bg-[#514DF8] hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-md shadow-lg transition duration-300 ease-in-out text-lg w-full sm:w-auto">
               Shop Now
             </button>
           </Link>
           <Link href="/discount" passHref>
-            <button className="flex items-center justify-center text-blue-600 hover:text-blue-800 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out text-lg w-full sm:w-auto">
+            <button className="flex items-center justify-center text-[#514DF8] hover:text-blue-900 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out text-lg w-full sm:w-auto">
               Get 30% discount <ArrowRight className="ml-2 h-5 w-5" />
             </button>
           </Link>

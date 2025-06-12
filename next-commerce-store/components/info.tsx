@@ -1,7 +1,7 @@
 "use client";
 
 import { Product } from "@/types";
-import { useState } from "react";
+import { useState, MouseEventHandler } from "react";
 import Button from "@/components/ui/button";
 import {
   Select,
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import useCart from "@/hooks/use-cart";
 
 interface InfoProps {
   data: Product & {
@@ -23,9 +24,29 @@ interface InfoProps {
 }
 
 const Info: React.FC<InfoProps> = ({ data }) => {
-  const [selectedVariation, setSelectedVariation] = useState(
-    data.variations[0]
-  );
+   const cart = useCart();
+
+  const [selectedVariationId, setSelectedVariationId] = useState(
+      data.variations[0]?.id || ""
+    );
+
+
+  const selectedVariation =
+    data.variations.find((v) => v.id === selectedVariationId) ||
+    data.variations[0];
+
+  const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
+      event.stopPropagation();
+      cart.addItem(data, selectedVariationId);
+    };
+
+    if (!selectedVariation) {
+      return (
+        <div className="bg-white rounded-xl border p-3 space-y-4">
+          <p>{data.name} (No variations available)</p>
+        </div>
+      );
+    }
 
   return (
     <div>
@@ -42,7 +63,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           <Select
             value={selectedVariation.id}
             onValueChange={(value) =>
-              setSelectedVariation(data.variations.find((v) => v.id === value)!)
+              setSelectedVariationId(value)
             }
           >
             <SelectTrigger className="w-[180px]">
@@ -60,7 +81,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
       </div>
       <div className="mt-10 flex items-center gap-x-3">
-        <Button className="flex items-center gap-x-2">Add To Cart</Button>
+        <Button onClick={onAddToCart} className="flex items-center gap-x-2">Add To Cart</Button>
       </div>
     </div>
   );

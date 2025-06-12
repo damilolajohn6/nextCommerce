@@ -11,7 +11,7 @@ const Navbar = async () => {
   const categories = await getCategories();
 
   return (
-    <div className="border-b">
+    <div className="border-b bg-slate-50 shadow-lg ">
       <Container>
         <Topbar />
         <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
