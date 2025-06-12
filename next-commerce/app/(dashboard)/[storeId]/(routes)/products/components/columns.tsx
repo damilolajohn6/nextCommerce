@@ -5,16 +5,17 @@ import { ColumnDef } from "@tanstack/react-table"
 import { CellAction } from "./cell-action"
 
 export type ProductColumn = {
-  id: string
+  id: string;
   name: string;
   price: string;
   category: string;
   size: string;
   color: string;
   createdAt: string;
+  variations: string;
   isFeatured: boolean;
   isArchived: boolean;
-}
+};
 
 export const columns: ColumnDef<ProductColumn>[] = [
   {

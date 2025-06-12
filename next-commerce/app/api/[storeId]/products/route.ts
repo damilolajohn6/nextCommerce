@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs';
-
 import prismadb from '@/lib/prismadb';
 
 export async function POST(
@@ -9,10 +8,8 @@ export async function POST(
 ) {
   try {
     const { userId } = auth();
-
     const body = await req.json();
-
-    const { name, price, categoryId, colorId, sizeId, images, isFeatured, isArchived } = body;
+    const { name, description, categoryId, variations, isFeatured, isArchived } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 403 });
@@ -22,24 +19,12 @@ export async function POST(
       return new NextResponse("Name is required", { status: 400 });
     }
 
-    if (!images || !images.length) {
-      return new NextResponse("Images are required", { status: 400 });
-    }
-
-    if (!price) {
-      return new NextResponse("Price is required", { status: 400 });
-    }
-
     if (!categoryId) {
       return new NextResponse("Category id is required", { status: 400 });
     }
 
-    if (!colorId) {
-      return new NextResponse("Color id is required", { status: 400 });
-    }
-
-    if (!sizeId) {
-      return new NextResponse("Size id is required", { status: 400 });
+    if (!variations || !variations.length) {
+      return new NextResponse("At least one variation is required", { status: 400 });
     }
 
     if (!params.storeId) {
@@ -47,10 +32,7 @@ export async function POST(
     }
 
     const storeByUserId = await prismadb.store.findFirst({
-      where: {
-        id: params.storeId,
-        userId
-      }
+      where: { id: params.storeId, userId }
     });
 
     if (!storeByUserId) {
@@ -60,39 +42,40 @@ export async function POST(
     const product = await prismadb.product.create({
       data: {
         name,
-        price,
+        description,
         isFeatured,
         isArchived,
         categoryId,
-        colorId,
-        sizeId,
         storeId: params.storeId,
-        images: {
-          createMany: {
-            data: [
-              ...images.map((image: { url: string }) => image),
-            ],
-          },
+        variations: {
+          create: variations.map((variation: any) => ({
+            sizeId: variation.sizeId || null,
+            colorId: variation.colorId || null,
+            price: variation.price,
+            stock: variation.stock,
+            images: {
+              create: variation.images?.map((image: { url: string }) => ({ url: image.url })) || [],
+            },
+          })),
         },
       },
+      include: { variations: { include: { images: true } } },
     });
-  
+
     return NextResponse.json(product);
   } catch (error) {
     console.log('[PRODUCTS_POST]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
-};
+}
 
 export async function GET(
   req: Request,
-  { params }: { params: { storeId: string } },
+  { params }: { params: { storeId: string } }
 ) {
   try {
-    const { searchParams } = new URL(req.url)
+    const { searchParams } = new URL(req.url);
     const categoryId = searchParams.get('categoryId') || undefined;
-    const colorId = searchParams.get('colorId') || undefined;
-    const sizeId = searchParams.get('sizeId') || undefined;
     const isFeatured = searchParams.get('isFeatured');
 
     if (!params.storeId) {
@@ -103,25 +86,20 @@ export async function GET(
       where: {
         storeId: params.storeId,
         categoryId,
-        colorId,
-        sizeId,
         isFeatured: isFeatured ? true : undefined,
         isArchived: false,
       },
       include: {
         images: true,
         category: true,
-        color: true,
-        size: true,
+        variations: { include: { size: true, color: true, images: true } },
       },
-      orderBy: {
-        createdAt: 'desc',
-      }
+      orderBy: { createdAt: 'desc' },
     });
-  
+
     return NextResponse.json(products);
   } catch (error) {
     console.log('[PRODUCTS_GET]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
-};
+}

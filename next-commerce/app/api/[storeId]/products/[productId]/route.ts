@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs";
-
 import prismadb from "@/lib/prismadb";
 
 export async function GET(
@@ -13,23 +12,20 @@ export async function GET(
     }
 
     const product = await prismadb.product.findUnique({
-      where: {
-        id: params.productId
-      },
+      where: { id: params.productId },
       include: {
         images: true,
         category: true,
-        size: true,
-        color: true,
-      }
+        variations: { include: { size: true, color: true, images: true } },
+      },
     });
-  
+
     return NextResponse.json(product);
   } catch (error) {
     console.log('[PRODUCT_GET]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
-};
+}
 
 export async function DELETE(
   req: Request,
@@ -47,10 +43,7 @@ export async function DELETE(
     }
 
     const storeByUserId = await prismadb.store.findFirst({
-      where: {
-        id: params.storeId,
-        userId
-      }
+      where: { id: params.storeId, userId },
     });
 
     if (!storeByUserId) {
@@ -58,18 +51,15 @@ export async function DELETE(
     }
 
     const product = await prismadb.product.delete({
-      where: {
-        id: params.productId
-      },
+      where: { id: params.productId },
     });
-  
+
     return NextResponse.json(product);
   } catch (error) {
     console.log('[PRODUCT_DELETE]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
-};
-
+}
 
 export async function PATCH(
   req: Request,
@@ -77,10 +67,8 @@ export async function PATCH(
 ) {
   try {
     const { userId } = auth();
-
     const body = await req.json();
-
-    const { name, price, categoryId, images, colorId, sizeId, isFeatured, isArchived } = body;
+    const { name, description, categoryId, variations, isFeatured, isArchived } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 403 });
@@ -94,31 +82,16 @@ export async function PATCH(
       return new NextResponse("Name is required", { status: 400 });
     }
 
-    if (!images || !images.length) {
-      return new NextResponse("Images are required", { status: 400 });
-    }
-
-    if (!price) {
-      return new NextResponse("Price is required", { status: 400 });
-    }
-
     if (!categoryId) {
       return new NextResponse("Category id is required", { status: 400 });
     }
 
-    if (!colorId) {
-      return new NextResponse("Color id is required", { status: 400 });
-    }
-
-    if (!sizeId) {
-      return new NextResponse("Size id is required", { status: 400 });
+    if (!variations || !variations.length) {
+      return new NextResponse("At least one variation is required", { status: 400 });
     }
 
     const storeByUserId = await prismadb.store.findFirst({
-      where: {
-        id: params.storeId,
-        userId
-      }
+      where: { id: params.storeId, userId },
     });
 
     if (!storeByUserId) {
@@ -126,41 +99,43 @@ export async function PATCH(
     }
 
     await prismadb.product.update({
-      where: {
-        id: params.productId
-      },
+      where: { id: params.productId },
       data: {
         name,
-        price,
+        description,
         categoryId,
-        colorId,
-        sizeId,
+        isFeatured,
+        isArchived,
+        variations: {
+          deleteMany: {},
+        },
         images: {
           deleteMany: {},
         },
-        isFeatured,
-        isArchived,
       },
     });
 
     const product = await prismadb.product.update({
-      where: {
-        id: params.productId
-      },
+      where: { id: params.productId },
       data: {
-        images: {
-          createMany: {
-            data: [
-              ...images.map((image: { url: string }) => image),
-            ],
-          },
+        variations: {
+          create: variations.map((variation: any) => ({
+            sizeId: variation.sizeId || null,
+            colorId: variation.colorId || null,
+            price: variation.price,
+            stock: variation.stock,
+            images: {
+              create: variation.images?.map((image: { url: string }) => ({ url: image.url })) || [],
+            },
+          })),
         },
       },
-    })
-  
+      include: { variations: { include: { images: true } } },
+    });
+
     return NextResponse.json(product);
   } catch (error) {
     console.log('[PRODUCT_PATCH]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
-};
+}

@@ -1,28 +1,17 @@
 import { format } from "date-fns";
-
 import prismadb from "@/lib/prismadb";
 import { formatter } from "@/lib/utils";
-
 import { ProductsClient } from "./components/client";
 import { ProductColumn } from "./components/columns";
 
-const ProductsPage = async ({
-  params
-}: {
-  params: { storeId: string }
-}) => {
+const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
   const products = await prismadb.product.findMany({
-    where: {
-      storeId: params.storeId
-    },
+    where: { storeId: params.storeId },
     include: {
       category: true,
-      size: true,
-      color: true,
+      variations: { include: { size: true, color: true } },
     },
-    orderBy: {
-      createdAt: 'desc'
-    }
+    orderBy: { createdAt: "desc" },
   });
 
   const formattedProducts: ProductColumn[] = products.map((item) => ({
@@ -30,11 +19,16 @@ const ProductsPage = async ({
     name: item.name,
     isFeatured: item.isFeatured,
     isArchived: item.isArchived,
-    price: formatter.format(item.price.toNumber()),
+    price: formatter.format(
+      item.variations.length > 0 ? Number(item.variations[0].price) : 0
+    ),
     category: item.category.name,
-    size: item.size.name,
-    color: item.color.value,
-    createdAt: format(item.createdAt, 'MMMM do, yyyy'),
+    variations: item.variations
+      .map((v) => `${v.size?.name || "No Size"}/${v.color?.name || "No Color"}`)
+      .join(", "),
+    size: item.variations.length > 0 && item.variations[0].size ? item.variations[0].size.name : "No Size",
+    color: item.variations.length > 0 && item.variations[0].color ? item.variations[0].color.name : "No Color",
+    createdAt: format(item.createdAt, "MMMM do, yyyy"),
   }));
 
   return (

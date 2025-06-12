@@ -22,9 +22,7 @@ Key Features:
 - Stripe webhooks
 - MySQL + Prisma + PlanetScale
 
-### Prerequisites
 
-**Node version 14.x**
 
 ### Cloning the repository
 
